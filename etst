@@ -111,4 +111,48 @@ try:
     
 except Exception as e:
     print(f"✗ Erreur: {e}")
+-----------------------------------
+import spidev
+import time
 
+spi = spidev.SpiDev()
+spi.open(0, 0)
+spi.max_speed_hz = 1350000
+
+print("Test de tous les canaux du MCP3008...")
+print("Si tout est à 0, problème d'alimentation")
+print("Si certains canaux montrent 1023, c'est mieux!\n")
+
+for canal in range(8):
+    adc = spi.xfer2([1, (8 + canal) << 4, 0])
+    valeur = ((adc[1] & 3) << 8) + adc[2]
+    print(f"Canal {canal}: {valeur}")
+
+spi.close()
+```
+
+## Solution : Vérification des connexions critiques
+
+Vérifiez **CES CONNEXIONS EN PRIORITÉ** :
+
+### 1. Alimentation du MCP3008 (CRITIQUE)
+
+Refaites ces connexions en vous assurant que les fils sont bien enfoncés :
+```
+Rail + (3.3V) → MCP3008 broche 16 (VDD)
+Rail + (3.3V) → MCP3008 broche 15 (VREF)
+```
+
+**Astuce :** Essayez de déplacer le MCP3008 d'une ligne sur la breadboard. Parfois certains trous sont usés.
+
+### 2. Masse du MCP3008
+```
+Rail - (GND) → MCP3008 broche 14 (AGND)
+Rail - (GND) → MCP3008 broche 9 (DGND)
+```
+
+### 3. Test simple : Connectez CH0 au 3.3V
+
+**Débranchez temporairement le microphone** et connectez :
+```
+Rail + (3.3V) → MCP3008 broche 1 (CH0)
